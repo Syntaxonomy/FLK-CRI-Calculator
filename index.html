@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fentanyl Lidocaine Ketamine CRI Infusions</title>
+    <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'PT Sans', sans-serif; line-height: 1.6; margin: 0; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        input[type="number"] { width: 100px; }
+        .header { background-color: #f0f0f0; font-weight: bold; }
+        .result { background-color: #e6e6e6; }
+        .slider-container { width: 100%; padding: 20px 0; position: relative; }
+        .slider { width: 100%; margin-top: -10px; z-index: 2; position: relative; }
+        .slider-color-bar {
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(to right, #00ff00, #ffff00, #ffa500, #ff0000);
+            position: absolute;
+            top: 25px;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fentanyl Lidocaine Ketamine CRI Infusions</h1>
+    <table>
+        <tr>
+            <td>Patient Name:</td>
+            <td><input type="text" id="patientName"></td>
+            <td>Date:</td>
+            <td><input type="date" id="date"></td>
+        </tr>
+        <tr>
+            <td>Patient Weight:</td>
+            <td><input type="number" id="patientWeight" value="10" step="0.1"> Kg</td>
+            <td>Species:</td>
+            <td>
+                <select id="species">
+                    <option value="dog">Dog</option>
+                    <option value="cat">Cat</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>Syringe Volume:</td>
+            <td><input type="number" id="syringeVolume" value="50" step="1"> mL</td>
+            <td colspan="2"></td>
+        </tr>
+        <tr>
+            <td>CRI Duration:</td>
+            <td><input type="number" id="criDuration" value="24" step="0.5"> hours</td>
+            <td colspan="2"></td>
+        </tr>
+        <tr>
+            <td>Calculated Fluid Rate:</td>
+            <td><span id="calculatedFluidRate"></span> mL/Kg/hr</td>
+            <td>=</td>
+            <td><span id="totalFluidRate"></span> mL/hr</td>
+        </tr>
+    </table>
+
+    <div class="slider-container">
+        <div class="slider-color-bar"></div>
+        <input type="range" id="doseSlider" class="slider" min="0" max="1000" value="500">
+        <p>Dose Level: <span id="doseLevel">Medium</span></p>
+    </div>
+
+    <table>
+        <tr class="header">
+            <th></th>
+            <th>Drug dose rate</th>
+            <th>Total Drug</th>
+            <th>Drug Volume</th>
+            <th>Drug/mL fluids</th>
+        </tr>
+        <tr>
+            <td>Fentanyl (0.05mg/mL)</td>
+            <td id="fentanylRate"></td>
+            <td class="result" id="fentanylTotal"></td>
+            <td class="result" id="fentanylVolume"></td>
+            <td class="result" id="fentanylConc"></td>
+        </tr>
+        <tr id="lidocaineRow">
+            <td>Lidocaine (20mg/mL)</td>
+            <td id="lidocaineRate"></td>
+            <td class="result" id="lidocaineTotal"></td>
+            <td class="result" id="lidocaineVolume"></td>
+            <td class="result" id="lidocaineConc"></td>
+        </tr>
+        <tr>
+            <td>Ketamine (100mg/mL)</td>
+            <td id="ketamineRate"></td>
+            <td class="result" id="ketamineTotal"></td>
+            <td class="result" id="ketamineVolume"></td>
+            <td class="result" id="ketamineConc"></td>
+        </tr>
+    </table>
+
+    <h2>Premed:</h2>
+    <table>
+        <tr>
+            <td>ACP - 0.02mg/kg IM or IV:</td>
+            <td class="result" id="acpVolume"></td>
+        </tr>
+        <tr>
+            <td>Fentanyl - 0.002 mg/kg IM or IV:</td>
+            <td class="result" id="premedFentanylVolume"></td>
+        </tr>
+    </table>
+
+    <h2>Loading Dose:</h2>
+    <table>
+        <tr id="loadingLidocaineRow">
+            <td>Lidocaine/lignocaine (1 mg/kg):</td>
+            <td class="result" id="loadingLidocaineVolume"></td>
+        </tr>
+        <tr>
+            <td>Ketamine (0.3mg/Kg):</td>
+            <td class="result" id="loadingKetamineVolume"></td>
+        </tr>
+    </table>
+
+    <script>
+        const weightInput = document.getElementById('patientWeight');
+        const volumeInput = document.getElementById('syringeVolume');
+        const durationInput = document.getElementById('criDuration');
+        const speciesSelect = document.getElementById('species');
+        const slider = document.getElementById('doseSlider');
+
+        const drugRanges = {
+            fentanyl: { low: 0.002, medium: 0.004, high: 0.006 },
+            lidocaine: { low: 0.6, medium: 1.8, high: 3.0 },
+            ketamine: { low: 0.12, medium: 0.66, high: 1.2 }
+        };
+
+        function interpolate(low, high, fraction) {
+            return low + (high - low) * fraction;
+        }
+
+        function updateCalculations() {
+            const weight = parseFloat(weightInput.value);
+            const syringeVolume = parseFloat(volumeInput.value);
+            const duration = parseFloat(durationInput.value);
+            const species = speciesSelect.value;
+            const sliderValue = parseFloat(slider.value) / 1000;
+
+            // Calculate fluid rate
+            const fluidRate = syringeVolume / (weight * duration);
+            const totalFluidRate = fluidRate * weight;
+
+            document.getElementById('calculatedFluidRate').textContent = fluidRate.toFixed(3);
+            document.getElementById('totalFluidRate').textContent = totalFluidRate.toFixed(2);
+
+            // Calculate drug dose rates
+            const fentanylDose = interpolate(drugRanges.fentanyl.low, drugRanges.fentanyl.high, sliderValue);
+            const lidocaineDose = species === 'dog' ? interpolate(drugRanges.lidocaine.low, drugRanges.lidocaine.high, sliderValue) : 0;
+            const ketamineDose = interpolate(drugRanges.ketamine.low, drugRanges.ketamine.high, sliderValue);
+
+            function calculateDrug(rate, totalId, volumeId, concId, concentration) {
+                const total = rate * weight * duration;
+                const volume = total / concentration;
+                const conc = total / syringeVolume;
+                
+                document.getElementById(totalId).textContent = total.toFixed(2) + ' mg';
+                document.getElementById(volumeId).textContent = volume.toFixed(2) + ' mL';
+                document.getElementById(concId).textContent = conc.toFixed(3) + ' mg/mL';
+
+                return { rate, total, volume, conc };
+            }
+
+            const fentanylCalc = calculateDrug(fentanylDose, 'fentanylTotal', 'fentanylVolume', 'fentanylConc', 0.05);
+            const lidocaineCalc = calculateDrug(lidocaineDose, 'lidocaineTotal', 'lidocaineVolume', 'lidocaineConc', 20);
+            const ketamineCalc = calculateDrug(ketamineDose, 'ketamineTotal', 'ketamineVolume', 'ketamineConc', 100);
+
+            document.getElementById('fentanylRate').textContent = fentanylCalc.rate.toFixed(4) + ' mg/Kg/hr';
+            document.getElementById('lidocaineRate').textContent = lidocaineCalc.rate.toFixed(2) + ' mg/Kg/hr';
+            document.getElementById('ketamineRate').textContent = ketamineCalc.rate.toFixed(2) + ' mg/Kg/hr';
+
+            // Premed and Loading Dose calculations
+            document.getElementById('acpVolume').textContent = (weight * 0.02 / 2).toFixed(2) + ' mL';
+            document.getElementById('premedFentanylVolume').textContent = (weight * 0.002 / 0.05).toFixed(2) + ' mL';
+            document.getElementById('loadingLidocaineVolume').textContent = (weight / 20).toFixed(2) + ' mL';
+            document.getElementById('loadingKetamineVolume').textContent = (weight * 0.3 / 100).toFixed(2) + ' mL';
+
+            // Update dose level description
+            let doseLevel = "Low";
+            if (sliderValue > 0.66) doseLevel = "High";
+            else if (sliderValue > 0.33) doseLevel = "Medium";
+            document.getElementById('doseLevel').textContent = doseLevel;
+
+            // Toggle lidocaine visibility based on species
+            const lidocaineElements = document.querySelectorAll('#lidocaineRow, #loadingLidocaineRow');
+            lidocaineElements.forEach(el => el.style.display = species === 'cat' ? 'none' : '');
+        }
+
+        // Add event listeners
+        [weightInput, volumeInput, durationInput, speciesSelect, slider].forEach(input => {
+            input.addEventListener('input', updateCalculations);
+        });
+
+        // Initial calculation
+        updateCalculations();
+    </script>
+</body>
+</html>
