@@ -5,6 +5,45 @@ All notable changes to the FLK CRI Calculator will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-10-16
+
+### Added
+- **Diluent Volume Calculation**: Explicit display of diluent (saline) volume required to reach total container volume
+- **Total Volume Verification**: Auto-sum row showing drug volumes + diluent = container size with color-coded validation (green if match, red if mismatch)
+- **Critical Safety Warning**: Prominent warning about diluent selection - Normal Saline ONLY for ketamine CRIs (calcium in Hartmann's causes crystallization)
+- **Interactive Help Tooltips**: Question mark icons with hover tooltips for main calculator instructions and dose slider explanation
+- **Enhanced Help Documentation**: Detailed diluent selection warning in Additional Information section with clinical rationale
+- **Business Strategy Document**: Comprehensive `BUSINESS_STRATEGY.md` outlining monetization options and phased rollout plan
+
+### Changed
+- **Terminology Update**: Changed "Lidocaine" to "Lignocaine" throughout calculator (Australian/UK terminology)
+  - Drug name in main table: "Lignocaine (20mg/mL)"
+  - Loading dose: "Lignocaine (Lidocaine) (1 mg/kg)"
+  - Single Pump table: "Lignocaine"
+  - All tooltips and documentation updated
+  - Contraindications and side effects sections updated
+- **UI Improvements**:
+  - Help tooltip icons styled with teal background (#0f536b) and drop shadow for better contrast against orange headers
+  - Tooltips positioned as superscript next to headers for clean, professional appearance
+  - Star icon in "Dual Pump (Recommended)" tab brightened when active for better visibility
+  - Consistent tooltip styling across all instances (20px circles, 300px popups, proper z-index)
+- **Calculator Mode Documentation**: Updated "Additional Information" section to clearly explain Standard Fluid Pump vs Syringe Driver Pump options
+
+### Fixed
+- Tooltip z-index issue resolved - tooltips now appear above slider elements (z-index: 100)
+- Tooltip font inheritance issue fixed - explicit font-size, font-weight, and line-height prevent h2 styling from bleeding through
+- Help tooltip positioning improved - now inline with headers rather than right-justified
+
+### Security
+- **Social Sharing Disabled**: Social sharing section hidden (`display: none`) pending specialist veterinary anaesthetist clinical verification
+- Added note in README about pending clinical verification
+
+### Technical
+- Updated `updateDrugDisplay()` function signature to accept `containerVolume` parameter
+- All function calls updated to pass container volume for diluent calculation
+- Diluent calculation: `diluentVolume = containerVolume - (fentanylVolume + lignocaineVolume + ketamineVolume)`
+- Volume verification with color coding based on match threshold (<0.01 mL difference)
+
 ## [2.0.0] - 2025-10-16
 
 ### Added

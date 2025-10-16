@@ -140,7 +140,9 @@
         position: relative;
         display: inline-block;
         cursor: help;
-        float: right;
+        margin-left: 8px;
+        vertical-align: super;
+        font-size: 0.7em;
       }
       .question-mark {
         display: inline-block;
@@ -152,6 +154,8 @@
         text-align: center;
         line-height: 20px;
         font-weight: bold;
+        font-size: 14px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
       }
       .instructions-text {
         visibility: hidden;
@@ -162,11 +166,14 @@
         border-radius: 6px;
         padding: 10px;
         position: absolute;
-        z-index: 1;
+        z-index: 100;
         top: 125%;
         right: 0;
         opacity: 0;
         transition: opacity 0.3s;
+        font-size: 14px;
+        font-weight: normal;
+        line-height: 1.6;
       }
       .instructions:hover .instructions-text {
         visibility: visible;
@@ -235,6 +242,9 @@
         background-color: #f7931e;
         color: white;
         font-weight: bold;
+      }
+      .tab.active .star-icon {
+        filter: brightness(2) drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
       }
       .mode-content {
         display: none;
@@ -401,28 +411,30 @@
     </style>
   </head>
   <body>
-    <h1>Fentanyl Lidocaine Ketamine CRI Calculator</h1>
-    <div class="instructions">
-      <span class="question-mark">?</span>
-      <span class="instructions-text">
-        1. Select your CRI setup mode (tab).<br />
-        2. Enter patient details and select species.<br />
-        3. Enter mode-specific parameters.<br />
-        4. Adjust dose rate using the slider.<br />
-        5. Review calculated drug volumes and rates.<br />
-        6. Check premed and loading dose recommendations.
-      </span>
-    </div>
+    <h1>
+      Fentanyl Lidocaine Ketamine CRI Calculator
+      <div class="instructions">
+        <span class="question-mark">?</span>
+        <span class="instructions-text">
+          1. Select your CRI setup mode (tab).<br />
+          2. Enter patient details and select species.<br />
+          3. Enter mode-specific parameters.<br />
+          4. Adjust dose rate using the slider.<br />
+          5. Review calculated drug volumes and rates.<br />
+          6. Check premed and loading dose recommendations.
+        </span>
+      </div>
+    </h1>
 
     <!-- Tab Navigation -->
     <div class="tab-container">
       <button class="tab active" onclick="switchMode('dual')">
-        ⭐ Dual Pump (Recommended)
+        <span class="star-icon">⭐</span> Dual Pump (Recommended)
       </button>
+      <button class="tab" onclick="switchMode('single')">Single Pump</button>
       <button class="tab" onclick="switchMode('flexible')">
         Flexible Rate
       </button>
-      <button class="tab" onclick="switchMode('single')">Single Pump</button>
     </div>
 
     <!-- Patient Details (Always Visible) -->
@@ -514,25 +526,24 @@
       <!-- Standard Dual Pump Inputs -->
       <div id="dualStandardInputs">
         <table>
+          <tr class="header">
+            <th style="width: 33.33%;">CRI Line</th>
+            <th style="width: 33.33%;">Secondary Line</th>
+            <th style="width: 33.33%;">Container</th>
+          </tr>
           <tr>
-            <td style="width: 25%;">CRI Rate:</td>
-            <td style="width: 25%;">
+            <td>
+              <strong>Rate:</strong><br>
               <input type="number" id="dualCriRate" value="3" step="0.1" min="0.1" style="width: 60px;" />
               mL/Kg/hr
             </td>
-            <td style="width: 25%;">Duration:</td>
-            <td style="width: 25%;">
-              <input type="number" id="dualDuration" value="8" step="1" style="width: 60px;" /> hours
-            </td>
-          </tr>
-          <tr>
-            <td>Secondary Line:</td>
             <td>
+              <strong>Rate:</strong><br>
               <input type="number" id="dualSecondaryRate" value="2" step="0.1" min="0" style="width: 60px;" />
               mL/Kg/hr
             </td>
-            <td>Container:</td>
             <td>
+              <strong>Size:</strong><br>
               <select id="dualSuggestedContainer">
                 <option value="20">20mL</option>
                 <option value="50">50mL</option>
@@ -541,14 +552,26 @@
                 <option value="500">500mL</option>
                 <option value="1000">1000mL</option>
               </select>
-              (<span id="dualContainerNeeded"></span> mL needed)
             </td>
           </tr>
           <tr>
-            <td><strong>CRI Pump:</strong></td>
+            <td>
+              <strong>Duration:</strong><br>
+              <input type="number" id="dualDuration" value="8" step="1" style="width: 60px;" /> hours
+            </td>
+            <td>
+              <strong>When:</strong><br>
+              Intra-op only
+            </td>
+            <td>
+              <strong>Needed:</strong><br>
+              <span id="dualContainerNeeded"></span> mL
+            </td>
+          </tr>
+          <tr>
             <td class="fluid-rate" id="dualCriPumpRate"></td>
-            <td><strong>Secondary Pump:</strong></td>
             <td class="fluid-rate" id="dualSecondaryPumpRate"></td>
+            <td></td>
           </tr>
         </table>
       </div>
@@ -705,7 +728,7 @@
           <td id="singleFentanylMaintenance"></td>
         </tr>
         <tr id="singleLidocaineRow">
-          <td>Lidocaine</td>
+          <td>Lignocaine</td>
           <td id="singleLidocaineIntraop"></td>
           <td id="singleLidocaineMaintenance"></td>
         </tr>
@@ -717,7 +740,21 @@
       </table>
     </div>
 
-    <h2>Dose Rate Adjustment Slider</h2>
+    <h2>
+      Dose Rate Adjustment Slider
+      <div class="instructions">
+        <span class="question-mark">?</span>
+        <span class="instructions-text">
+          Automatically adjusts the dose rates of all three drugs proportionally while staying within their safe therapeutic ranges.<br /><br />
+          Use this to match expected pain level, patient risk profile, and procedure invasiveness.<br /><br />
+          Dose Ranges:<br />
+          • Fentanyl: 2-6 µg/kg/hr<br />
+          • Lignocaine (Lidocaine): 0.6-3.0 mg/kg/hr (dogs)<br />
+          • Ketamine: 0.12-1.2 mg/kg/hr<br /><br />
+          Medium (0.004 mg/kg/hr fentanyl, 1.8 mg/kg/hr lignocaine, 0.66 mg/kg/hr ketamine) is a good starting point for most procedures.
+        </span>
+      </div>
+    </h2>
     <div class="slider-container">
       <div class="slider-color-bar"></div>
       <input
@@ -752,7 +789,7 @@
         <td class="result drug-volume" id="fentanylVolume"></td>
       </tr>
       <tr id="lidocaineRow">
-        <td>Lidocaine (20mg/mL)</td>
+        <td>Lignocaine (20mg/mL)</td>
         <td id="lidocaineRate"></td>
         <td class="result" id="lidocaineTotal"></td>
         <td class="result drug-concentration" id="lidocaineConc"></td>
@@ -765,7 +802,21 @@
         <td class="result drug-concentration" id="ketamineConc"></td>
         <td class="result drug-volume" id="ketamineVolume"></td>
       </tr>
+      <tr>
+        <td colspan="4" style="text-align: right; font-weight: bold;">Diluent (Normal Saline 0.9% NaCl)*:</td>
+        <td class="result" id="diluentVolume" style="background-color: #e8f4f8; color: black;"></td>
+      </tr>
+      <tr>
+        <td colspan="4" style="text-align: right; font-weight: bold;">TOTAL VOLUME (must equal container size):</td>
+        <td class="result" id="totalVolumeCheck" style="font-weight: bold;"></td>
+      </tr>
     </table>
+
+    <p style="font-size: 0.9em; color: #721c24; margin-top: 5px;">
+      <strong>*IMPORTANT:</strong> Use <strong>Normal Saline (0.9% NaCl)</strong> only as diluent for ketamine-containing CRIs.
+      Do NOT use Hartmann's solution (Lactated Ringer's) - the calcium content can cause ketamine to crystallize.
+      <a href="#diluentWarning" style="color: #0f536b; text-decoration: underline;">See additional information below</a>.
+    </p>
 
     <div id="volumeAlert"></div>
 
@@ -786,7 +837,7 @@
     <h2>Loading Dose:</h2>
     <table>
       <tr id="loadingLidocaineRow">
-        <td>Lidocaine/lignocaine (1 mg/kg):</td>
+        <td>Lignocaine (Lidocaine) (1 mg/kg):</td>
         <td class="result drug-volume" id="loadingLidocaineVolume"></td>
       </tr>
       <tr>
@@ -795,8 +846,8 @@
       </tr>
     </table>
 
-    <!-- Share Section -->
-    <div class="share-section">
+    <!-- Share Section - HIDDEN until specialist verification complete -->
+    <div class="share-section" style="display: none;">
       <h3>Find this calculator useful? Share it with colleagues!</h3>
       <div class="share-buttons">
         <a
@@ -856,7 +907,15 @@
       <h2>Calculator Modes - Which One Should I Use?</h2>
       <ul>
         <li>
-          <strong>⭐ Dual Pump (Recommended):</strong> Ideal for most clinics with two fluid pumps. Run the CRI at a constant maintenance rate (typically 3 mL/kg/hr) and add a secondary line intra-operatively for additional fluids. Drug delivery remains constant throughout all phases. This is the most flexible and safest approach.
+          <strong>⭐ Dual Pump (Recommended):</strong> Ideal for most clinics. This mode has two options:
+          <ul>
+            <li>
+              <strong>Standard Fluid Pump:</strong> Use two standard fluid pumps. Run the CRI at a constant maintenance rate (typically 3 mL/kg/hr) and add a secondary line intra-operatively for additional fluids (typically +2 mL/kg/hr = 5 mL/kg/hr total). Drug delivery remains constant throughout all phases. This is the most flexible and safest approach.
+            </li>
+            <li>
+              <strong>Syringe Driver Pump:</strong> Use a syringe driver for highly concentrated, low-volume CRI administration. Ideal for smaller patients or when you need precise, slow infusion rates. The syringe driver delivers only the drugs, while plain maintenance fluids are administered separately via a standard pump (manually adjusted between 3 mL/kg/hr pre/post-op and 5 mL/kg/hr intra-op).
+            </li>
+          </ul>
         </li>
         <li>
           <strong>Single Pump:</strong> For clinics with only one fluid pump available. Manually adjust the pump rate between maintenance (3 mL/kg/hr) and surgical rates (5 mL/kg/hr). Drug concentrations are calculated to deliver target doses at the surgical rate, with reduced doses automatically calculated for pre/post-op phases at maintenance rates.
@@ -903,6 +962,29 @@
           calm. You can stimulate breathing by gently squeezing the philtrum of
           the nose or by rubbing the chest wall.
         </li>
+        <li id="diluentWarning">
+          <strong>⚠️ CRITICAL - Diluent Selection for Ketamine CRIs:</strong>
+          <ul>
+            <li>
+              <strong>Use ONLY Normal Saline (0.9% NaCl)</strong> as diluent for any CRI containing ketamine.
+            </li>
+            <li>
+              <strong>DO NOT use Hartmann's solution (Lactated Ringer's solution)</strong> - the calcium ions in Hartmann's solution can cause ketamine to crystallize and precipitate out of solution.
+            </li>
+            <li>
+              This drug incompatibility can result in:
+              <ul>
+                <li>Crystal formation visible in the syringe or IV line</li>
+                <li>Reduced bioavailability of ketamine</li>
+                <li>Potential IV line occlusion</li>
+                <li>Unpredictable drug delivery</li>
+              </ul>
+            </li>
+            <li>
+              <strong>Clinical tip:</strong> Always check your diluent before preparing ketamine-containing CRIs. If you notice any cloudiness or precipitation after mixing, discard immediately and remake with normal saline.
+            </li>
+          </ul>
+        </li>
       </ul>
 
       <h2>Contraindications</h2>
@@ -925,11 +1007,11 @@
           </ul>
         </li>
         <li>
-          <strong>Lidocaine:</strong>
+          <strong>Lignocaine (Lidocaine):</strong>
           <ul>
             <li>
               Contraindicated in patients with known hypersensitivity to
-              lidocaine or amide-type local anaesthetics.
+              lignocaine or amide-type local anaesthetics.
             </li>
             <li>
               Use with caution in patients with significant cardiac conditions
@@ -938,7 +1020,7 @@
             <li>Reduce dosage in patients with hepatic or renal impairment.</li>
             <li>
               Note: The difference between therapeutic and toxic/lethal doses of
-              lidocaine in cats is small. Therefore, lidocaine is not
+              lignocaine in cats is small. Therefore, lignocaine is not
               recommended for use in cats and is automatically removed from the
               calculator for feline patients.
             </li>
@@ -1041,7 +1123,7 @@
           </ul>
         </li>
         <li>
-          <strong>Lidocaine:</strong>
+          <strong>Lignocaine (Lidocaine):</strong>
           <ul>
             <li>
               Watch for signs of toxicity:
@@ -1267,7 +1349,7 @@
           100
         );
 
-        updateDrugDisplay(fentanylCalc, lidocaineCalc, ketamineCalc);
+        updateDrugDisplay(fentanylCalc, lidocaineCalc, ketamineCalc, syringeVolume);
         updatePremedAndLoading(weight, species);
         checkVolumeAlert(
           fentanylCalc,
@@ -1322,7 +1404,7 @@
             100
           );
 
-          updateDrugDisplay(fentanylCalc, lidocaineCalc, ketamineCalc);
+          updateDrugDisplay(fentanylCalc, lidocaineCalc, ketamineCalc, syringeSize);
           updatePremedAndLoading(weight, species);
           checkVolumeAlert(
             fentanylCalc,
@@ -1393,7 +1475,7 @@
             100
           );
 
-          updateDrugDisplay(fentanylCalc, lidocaineCalc, ketamineCalc);
+          updateDrugDisplay(fentanylCalc, lidocaineCalc, ketamineCalc, suggestedContainer);
           updatePremedAndLoading(weight, species);
           checkVolumeAlert(
             fentanylCalc,
@@ -1498,7 +1580,7 @@
           100
         );
 
-        updateDrugDisplay(fentanylCalc, lidocaineCalc, ketamineCalc);
+        updateDrugDisplay(fentanylCalc, lidocaineCalc, ketamineCalc, suggestedContainer);
 
         // Calculate and display phase-specific drug delivery rates
         const maintenanceFraction = maintenanceRate / surgicalRate;
@@ -1541,7 +1623,7 @@
         return { rate, total, volume, conc };
       }
 
-      function updateDrugDisplay(fentanylCalc, lidocaineCalc, ketamineCalc) {
+      function updateDrugDisplay(fentanylCalc, lidocaineCalc, ketamineCalc, containerVolume) {
         // Fentanyl - show micrograms in parentheses for clarity
         const fentanylRateMg = fentanylCalc.rate.toFixed(4);
         const fentanylRateMcg = (fentanylCalc.rate * 1000).toFixed(1);
@@ -1580,6 +1662,29 @@
           ketamineCalc.volume.toFixed(2) + " mL";
         document.getElementById("ketamineConc").textContent =
           ketamineCalc.conc.toFixed(3) + " mg/mL";
+
+        // Calculate diluent and total volume
+        const totalDrugVolume = fentanylCalc.volume + lidocaineCalc.volume + ketamineCalc.volume;
+        const diluentVolume = containerVolume - totalDrugVolume;
+
+        document.getElementById("diluentVolume").textContent =
+          diluentVolume.toFixed(2) + " mL";
+
+        // Total volume check with color coding
+        const totalVolumeCell = document.getElementById("totalVolumeCheck");
+        totalVolumeCell.textContent = totalDrugVolume.toFixed(2) + " + " + diluentVolume.toFixed(2) + " = " + containerVolume.toFixed(2) + " mL";
+
+        // Color code: green if perfect match, red if mismatch
+        const volumeDiff = Math.abs((totalDrugVolume + diluentVolume) - containerVolume);
+        if (volumeDiff < 0.01) {
+          // Perfect match (within rounding error)
+          totalVolumeCell.style.backgroundColor = "#d4edda";
+          totalVolumeCell.style.color = "#155724";
+        } else {
+          // Mismatch - should never happen but safety check
+          totalVolumeCell.style.backgroundColor = "#f8d7da";
+          totalVolumeCell.style.color = "#721c24";
+        }
       }
 
       function updatePremedAndLoading(weight, species) {
