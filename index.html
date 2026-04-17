@@ -1169,6 +1169,8 @@
     <script>
       // Global variables
       let currentMode = "dual";
+      let dualContainerUserSet = false;
+      let singleContainerUserSet = false;
 
       const weightInput = document.getElementById("patientWeight");
       const speciesSelect = document.getElementById("species");
@@ -1434,9 +1436,9 @@
           const containerSelect = document.getElementById("dualSuggestedContainer");
           const currentContainer = parseFloat(containerSelect.value);
 
-          // Only auto-select if current selection is too small
+          // Only auto-select on initial load; respect user's choice afterwards
           const containers = [20, 50, 100, 250, 500, 1000];
-          if (currentContainer < containerNeeded) {
+          if (!dualContainerUserSet && currentContainer < containerNeeded) {
             const suggestedContainer = containers.find((c) => c >= containerNeeded) || 1000;
             containerSelect.value = suggestedContainer;
           }
@@ -1524,9 +1526,9 @@
         const containerSelect = document.getElementById("singleSuggestedContainer");
         const currentContainer = parseFloat(containerSelect.value);
 
-        // Only auto-select if current selection is too small
+        // Only auto-select on initial load; respect user's choice afterwards
         const containers = [20, 50, 100, 250, 500, 1000];
-        if (currentContainer < totalVolume) {
+        if (!singleContainerUserSet && currentContainer < totalVolume) {
           const suggestedContainer = containers.find((c) => c >= totalVolume) || 1000;
           containerSelect.value = suggestedContainer;
         }
@@ -1766,7 +1768,10 @@
         .addEventListener("input", updateCalculations);
       document
         .getElementById("dualSuggestedContainer")
-        .addEventListener("change", updateCalculations);
+        .addEventListener("change", () => {
+          dualContainerUserSet = true;
+          updateCalculations();
+        });
 
       // Syringe driver inputs
       document
@@ -1797,7 +1802,10 @@
         .addEventListener("input", updateCalculations);
       document
         .getElementById("singleSuggestedContainer")
-        .addEventListener("change", updateCalculations);
+        .addEventListener("change", () => {
+          singleContainerUserSet = true;
+          updateCalculations();
+        });
 
       // Initial calculation
       updateCalculations();
